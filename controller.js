@@ -3,8 +3,9 @@ const Contact = require('./Contacts')
 module.exports.getAllContacts = (req, res) => {
 	Contact.find()
 		.then((contacts) => {
-			console.log(contacts)
-			res.json(contacts)
+			// console.log(contacts)
+			// res.json(contacts)
+			res.render('index',{ contacts, error: {} })
 		})
 		.catch((err) => {
 			console.log(err)
@@ -15,80 +16,96 @@ module.exports.getAllContacts = (req, res) => {
 }
 
 module.exports.createContact = (req, res) => {
-	let {name, phone, email} = req.body
+	let {name, phone, email, id} = req.body
+	
+	let error = {}
 
-	let contact = new Contact({
-		name,
-		phone,
-		email
-	})
+	if (!name) {
+		error.name = "Please Provide Your Name"
+	}
 
-	contact.save()
-		.then((contact) => {
-			console.log(contact)
-			res.json(contact)
-		})
-		.catch((err) => {
-			console.log(err)
-			res.json({
+	if (!phone) {
+		error.phone = "Please Provide Your Number"
+	}
+
+	if (!email) {
+		error.email = "Please Provide Your Email"
+	}
+
+	let isError = Object.keys(error).length > 0
+
+	if (isError) {
+		console.log("I'm here")
+		Contact.find()
+			.then( contacts => {
+				return res.render('index', { contacts, error })
+			})
+			.catch( err => {
+				console.log(err)
+				return res.json({
 				message: 'Opps!!! ERROR'
 			})
-		})
-}
-
-module.exports.getContactById = (req, res) => {
-	let { id } = req.params
-	// id = parseInt(id)
-
-	Contact.findById(id)
-		.then((contact) => {
-			console.log(contact)
-			res.json(contact)
-		})
-		.catch((err) => {
-			console.log(err)
-			res.json({
-				message: 'Opps!!! ERROR'
 			})
-		})
+	} else {
+		if (id) {
+			Contact.findOneAndUpdate(
+						{_id: id},
+						{$set:
+							{
+								name,
+								phone,
+								email
+							}
+					})
+					.then(() => {
+						Contact.find()
+							.then( contacts => {
+								return res.render('index', { contacts, error: {} })
+								})
+					})
+					.catch((err) => {
+						console.log(err)
+						res.json({
+							message: 'Opps!!! ERROR'
+						})
+					})
+		} else {
+			let contact = new Contact({
+								name,
+								phone,
+								email
+				})
+
+					contact.save()
+						.then(c => {
+							Contact.find()
+								.then(contacts => {
+									return res.render('index', { contacts, error: {} })
+								})
+						})
+						.catch(err => {
+							console.log(err.message)
+							return res.json({
+								message: 'Opps!!! ERROR'
+							})
+						})
+}
+		}
+
+	
 }
 
-module.exports.updateContact = (req, res) => {
-	let { id } = req.params
-	// id = parseInt(id)
 
-	let {name, phone, email } = req.body
-
-	Contact.findOneAndUpdate(
-		{_id: id},
-		{$set:
-			{
-				name,
-				phone,
-				email
-			}
-		},
-		{new: true}
-		)
-		.then((contact) => {
-			console.log(contact)
-			res.json(contact)
-		})
-		.catch((err) => {
-			console.log(err)
-			res.json({
-				message: 'Opps!!! ERROR'
-			})
-		})
-}
 
 module.exports.deleteContact = (req, res) => {
 	let { id } = req.params
 	
 	Contact.findOneAndDelete({_id: id})
-		.then((contact) => {
-			console.log(contact)
-			res.json(contact)
+		.then(() => {
+			Contact.find()
+				.then(contacts => {
+					res.render('index', { contacts, error: {} })
+				})
 		})
 		.catch((err) => {
 			console.log(err)
