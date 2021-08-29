@@ -8,7 +8,7 @@ module.exports.getAllContacts = (req, res) => {
 			res.render('index',{ contacts, error: {} })
 		})
 		.catch((err) => {
-			console.log(err)
+			// console.log(err)
 			res.json({
 				message: 'Opps!!! ERROR'
 			})
@@ -35,13 +35,13 @@ module.exports.createContact = (req, res) => {
 	let isError = Object.keys(error).length > 0
 
 	if (isError) {
-		console.log("I'm here")
+		// console.log("I'm here")
 		Contact.find()
 			.then( contacts => {
 				return res.render('index', { contacts, error })
 			})
 			.catch( err => {
-				console.log(err)
+				// console.log(err)
 				return res.json({
 				message: 'Opps!!! ERROR'
 			})
@@ -64,7 +64,7 @@ module.exports.createContact = (req, res) => {
 								})
 					})
 					.catch((err) => {
-						console.log(err)
+						// console.log(err)
 						res.json({
 							message: 'Opps!!! ERROR'
 						})
@@ -84,7 +84,7 @@ module.exports.createContact = (req, res) => {
 								})
 						})
 						.catch(err => {
-							console.log(err.message)
+							// console.log(err.message)
 							return res.json({
 								message: 'Opps!!! ERROR'
 							})
@@ -95,7 +95,23 @@ module.exports.createContact = (req, res) => {
 	
 }
 
+module.exports.getCntById = (req, res) => {
+	const id = req.params.id
 
+	console.log(id)
+
+	Contact.findById(id)
+		.then(contact => {
+			// console.log(contact)
+			res.json(contact)
+		})
+		.catch(err => {
+			// console.log(err)
+			res.json({
+				message: 'Opps!!! ERROR'
+			})
+		})
+}
 
 module.exports.deleteContact = (req, res) => {
 	let { id } = req.params
